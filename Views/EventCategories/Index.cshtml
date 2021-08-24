@@ -1,0 +1,153 @@
+﻿
+@{
+    ViewData["Title"] = "Event Categories";
+}
+<!-- Content Wrapper. Contains page content -->
+<div class="content-wrapper">
+
+    <!-- Main content -->
+    <section class="content">
+        <!-- Default box -->
+        <div class="box">
+            <div class="box-header with-border">
+                <h3 class="box-title text-primary"><i class="fa fa-gear"></i> @ViewData["Title"]</h3>
+                <div class="box-tools pull-right">
+                    <button type="button" class="btn btn-box-tool" data-widget="collapse" data-toggle="tooltip"
+                            title="Collapse">
+                        <i class="fa fa-minus"></i>
+                    </button>
+                    <button type="button" class="btn btn-box-tool" data-widget="remove" data-toggle="tooltip" title="Remove">
+                        <i class="fa fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="box-body">
+                <div id="Grid"></div>
+            </div>
+            <!-- /.box-body -->
+            <div class="box-footer">
+
+            </div>
+            <!-- /.box-footer-->
+        </div>
+        <!-- /.box -->
+    </section>
+    <!-- /.content -->
+</div>
+<!-- /.content-wrapper -->
+<script id="templateForm" type="text/template">
+    <div id="myDialog">
+        <div class="form-group">
+            <label for="Name">Name</label>
+            <input class="form-control" id="Name" type="text" name="Name" value="{{:Name}}">
+        </div>
+        <div class="form-group">
+            <label for="Name">Description</label>
+            <textarea rows="3" class="form-control" id="Description" name="Description">{{:Description}}</textarea>
+        </div>
+        <div class="form-group">
+            <label for="BlockType">Block Type</label>
+            <select class="form-control" id="BlockType" name="BlockType">
+                <option>blog</option>
+                <option>links</option>
+                <option>photo_Galleries</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="IsActive">Is Active</label>
+            <input id="IsActive" name="IsActive" type="checkbox" checked value="true" />
+        </div>
+
+    </div>
+
+</script>
+
+@section Styles{
+
+}
+
+@section Scripts{
+
+    <script type="text/javascript">
+    $(function () {
+
+        var dataManager = ej.DataManager({
+            url: "/api/EventCategories",
+            adaptor: new ej.WebApiAdaptor(),
+            offline: true
+        });
+
+        var dataManagerUser = ej.DataManager({
+            url: "/api/User",
+            adaptor: new ej.WebApiAdaptor()
+        });
+        dataManager.ready.done(function (e) {
+            $("#Grid").ejGrid({
+                dataSource: ej.DataManager({
+                    json: e.result,
+                    adaptor: new ej.remoteSaveAdaptor(),
+                    insertUrl: "/api/EventCategories/Insert",
+                    updateUrl: "/api/EventCategories/Update",
+                    removeUrl: "/api/EventCategories/Remove",
+                }),
+                toolbarSettings: {
+                    showToolbar: true,
+                    toolbarItems: ["add", "edit", "delete", "update", "cancel", "search", "printGrid"]
+                },
+                editSettings: {
+                    allowEditing: true,
+                    allowAdding: true,
+                    allowDeleting: true,
+                    showDeleteConfirmDialog: true,
+                    editMode: "dialog"
+                    //editMode: "dialogtemplate",
+                    //dialogEditorTemplateID: "#templateForm"
+                },
+                isResponsive: true,
+                enableResponsiveRow: true,
+                allowSorting: true,
+                allowSearching: true,
+                allowFiltering: true,
+                filterSettings: {
+                    filterType: "excel",
+                    maxFilterChoices: 100,
+                    enableCaseSensitivity: false
+                },
+                allowPaging: true,
+                pageSettings: { pageSize: 10, printMode: ej.Grid.PrintMode.CurrentPage },
+                columns: [
+                    { field: "EventCategoryId", headerText: 'Event Category Id', isPrimaryKey: true, isIdentity: true, visible: false },
+                    { field: "Name", headerText: 'Name', validationRules: { required: true } },
+                    { field: "Description", headerText: 'Description' },
+                    { field: "IsActive", headerText: 'Is Active', displayAsCheckbox: "true", defaultValue: true, editType: "booleanedit", editParams: { checked: true } },
+                    { field: "Image", headerText: 'Image' },
+                    { field: "RecordOrder", headerText: 'Record Order', editType: "numericedit" },
+                    { field: "InsertDateTime", headerText: 'Insert Date', editType: "datepicker", format: "{0:MM/dd/yyyy}", allowEditing: false, visible: false },
+                    { field: "InsertUserId", headerText: 'Insert User', foreignKeyField: "UserProfileId", foreignKeyValue: "FirstName", dataSource: dataManagerUser, allowEditing: false, visible: false  },
+                    { field: "UpdateDateTime", headerText: 'Update Date', editType: "datepicker", format: "{0:MM/dd/yyyy}", allowEditing: false, visible: false },
+                    { field: "UpdateUserId", headerText: 'Update User', foreignKeyField: "UserProfileId", foreignKeyValue: "FirstName", dataSource: dataManagerUser, allowEditing: false, visible: false }
+                ],
+                actionComplete: "complete"
+            });
+        });
+
+
+    });
+
+    function complete(args) {
+        if (args.requestType == 'beginedit') {
+            $("#" + this._id + "_dialogEdit").ejDialog({ title: "Edit Record" });
+            $('#IsActive').prop('checked', (args.rowData["IsActive"] == true) ? true : false);
+            $('#IsActive').val((args.rowData["IsActive"] == true) ? true : false);
+            $("#myDialog").append('<input type="hidden" id="BlocksCategoryId" name="BlocksCategoryId" />');
+            $("#BlocksCategoryId").val(args.rowData["BlocksCategoryId"]);
+        }
+        if (args.requestType == "add") {
+            $("#GridIsActive").val(true);
+        }
+    }
+
+
+    </script>
+}
+

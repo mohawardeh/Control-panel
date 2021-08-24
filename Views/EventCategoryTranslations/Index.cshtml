@@ -1,0 +1,148 @@
+﻿
+@{
+    ViewData["Title"] = "Event category Translations";
+}
+<!-- Content Wrapper. Contains page content -->
+<div class="content-wrapper">
+
+    <!-- Main content -->
+    <section class="content">
+        <!-- Default box -->
+        <div class="box">
+            <div class="box-header with-border">
+                <h3 class="box-title text-primary"><i class="fa fa-gear"></i> @ViewData["Title"]</h3>
+                <div class="box-tools pull-right">
+                    <button type="button" class="btn btn-box-tool" data-widget="collapse" data-toggle="tooltip"
+                            title="Collapse">
+                        <i class="fa fa-minus"></i>
+                    </button>
+                    <button type="button" class="btn btn-box-tool" data-widget="remove" data-toggle="tooltip" title="Remove">
+                        <i class="fa fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="box-body">
+                <div id="Grid"></div>
+            </div>
+            <!-- /.box-body -->
+            <div class="box-footer">
+
+            </div>
+            <!-- /.box-footer-->
+        </div>
+        <!-- /.box -->
+    </section>
+    <!-- /.content -->
+</div>
+<!-- /.content-wrapper -->
+<script id="templateForm" type="text/template">
+
+    <table cellspacing="10">
+        <tr>
+            <td>
+                Block Name
+            </td>
+            <td colspan="3">
+                <input id="Name" name="Name" value="{{:Name}}" />
+            </td>
+        </tr>
+        <tr>
+            <td>
+                Description
+            </td>
+            <td>
+                <input id="Description" name="Description" value="{{:Description}}" />
+            </td>
+        </tr>
+
+    </table>
+</script>
+
+@section Styles{
+
+}
+
+@section Scripts{
+
+    <script type="text/javascript">
+    $(function () {
+
+        var dataManager = ej.DataManager({
+            url: "/api/EventCategoryTranslations",
+            adaptor: new ej.WebApiAdaptor(),
+            offline: true
+        });
+
+        var dataManagerUser = ej.DataManager({
+            url: "/api/User",
+            adaptor: new ej.WebApiAdaptor()
+        });
+
+        var dataManagerevemtcategory = ej.DataManager({
+            url: "/api/EventCategories",
+            adaptor: new ej.WebApiAdaptor()
+        });
+
+        dataManager.ready.done(function (e) {
+            $("#Grid").ejGrid({
+                dataSource: ej.DataManager({
+                    json: e.result,
+                    adaptor: new ej.remoteSaveAdaptor(),
+                    insertUrl: "/api/EventCategoryTranslations/Insert",
+                    updateUrl: "/api/EventCategoryTranslations/Update",
+                    removeUrl: "/api/EventCategoryTranslations/Remove",
+                }),
+                toolbarSettings: {
+                    showToolbar: true,
+                    toolbarItems: ["add", "edit", "delete", "update", "cancel", "search", "printGrid"]
+                },
+                editSettings: {
+                    allowEditing: true,
+                    allowAdding: true,
+                    allowDeleting: true,
+                    showDeleteConfirmDialog: true,
+                    editMode: "dialog"
+                },
+                isResponsive: true,
+                enableResponsiveRow: true,
+                allowSorting: true,
+                allowSearching: true,
+                allowFiltering: true,
+                filterSettings: {
+                    filterType: "excel",
+                    maxFilterChoices: 100,
+                    enableCaseSensitivity: false
+                },
+                allowPaging: true,
+                pageSettings: { pageSize: 10, printMode: ej.Grid.PrintMode.CurrentPage },
+                columns: [
+                    { field: "EventCategoryTranslationId", headerText: 'Event Category Translations Id', isPrimaryKey: true, isIdentity: true, visible: false },
+                    { field: "Name", headerText: 'Name', validationRules: { required: true }, editType:"stringedit" },
+                    { field: "CategoryId", headerText: 'Category', foreignKeyField: "EventCategoryId", foreignKeyValue: "Name", dataSource: dataManagerevemtcategory },
+                    { field: "Description", headerText: 'Description', editType: "stringedit" },
+                    { field: "IsActive", headerText: 'Is Active', displayAsCheckbox: "true", defaultValue: true, editType: "booleanedit", editParams: { checked: true } },
+                    { field: "Language", headerText: 'Language', editType: "stringedit" },
+                    { field: "Slug", headerText: 'Slug', editType: "stringedit" }
+
+                ],
+                actionComplete: "complete"
+            });
+        });
+
+
+    });
+
+    function complete(args) {
+        if (args.requestType == 'beginedit') {
+            $("#" + this._id + "_dialogEdit").ejDialog({ title: "Edit Record" });
+        }
+        if (args.requestType == "add") {
+            $("#GridIsActive").val(true);
+        }
+
+    }
+
+
+    </script>
+}
+
